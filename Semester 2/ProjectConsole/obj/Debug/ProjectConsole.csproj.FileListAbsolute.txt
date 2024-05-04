@@ -1,0 +1,10 @@
+F:\Semester 2\OOP\OOP-MAIN_PROJ\ProjectConsole\bin\Debug\ProjectConsole.exe.config
+F:\Semester 2\OOP\OOP-MAIN_PROJ\ProjectConsole\bin\Debug\ProjectConsole.exe
+F:\Semester 2\OOP\OOP-MAIN_PROJ\ProjectConsole\bin\Debug\ProjectConsole.pdb
+F:\Semester 2\OOP\OOP-MAIN_PROJ\ProjectConsole\bin\Debug\ProjectDLL.dll
+F:\Semester 2\OOP\OOP-MAIN_PROJ\ProjectConsole\bin\Debug\ProjectDLL.pdb
+F:\Semester 2\OOP\OOP-MAIN_PROJ\ProjectConsole\obj\Debug\ProjectConsole.csproj.AssemblyReference.cache
+F:\Semester 2\OOP\OOP-MAIN_PROJ\ProjectConsole\obj\Debug\ProjectConsole.csproj.CoreCompileInputs.cache
+F:\Semester 2\OOP\OOP-MAIN_PROJ\ProjectConsole\obj\Debug\ProjectConsole.csproj.CopyComplete
+F:\Semester 2\OOP\OOP-MAIN_PROJ\ProjectConsole\obj\Debug\ProjectConsole.exe
+F:\Semester 2\OOP\OOP-MAIN_PROJ\ProjectConsole\obj\Debug\ProjectConsole.pdb
