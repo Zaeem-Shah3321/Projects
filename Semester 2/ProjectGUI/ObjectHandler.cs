@@ -11,11 +11,11 @@ namespace ProjectGUI
 {
     internal class ObjectHandler
     {
-        private static IBook BookDl = new BookDB();
-        private static IPerson PersonDl = new PersonDB();
+        //private static IBook BookDl = new BookDB();
+        //private static IPerson PersonDl = new PersonDB();
 
-        //private static IBook BookDl = new BookFH();
-        //private static IPerson PersonDl = new PersonFH();
+        private static IBook BookDl = new BookFH();
+        private static IPerson PersonDl = new PersonFH();
 
         public static IBook GetBookDL()
         {

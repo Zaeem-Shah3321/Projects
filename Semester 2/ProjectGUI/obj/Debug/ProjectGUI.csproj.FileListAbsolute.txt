@@ -27,3 +27,32 @@ F:\Semester 2\OOP\OOP-MAIN_PROJ\ProjectGUI\obj\Debug\ProjectGUI.UI.Update_Book_I
 F:\Semester 2\OOP\OOP-MAIN_PROJ\ProjectGUI\obj\Debug\ProjectGUI.UI.Update_Student.resources
 F:\Semester 2\OOP\OOP-MAIN_PROJ\ProjectGUI\obj\Debug\ProjectGUI.UI.Update_Student_Info.resources
 F:\Semester 2\OOP\OOP-MAIN_PROJ\ProjectGUI\obj\Debug\ProjectGUI.UI.Student_Menu.resources
+F:\Semester 1 Projects\Semester 2\ProjectGUI\bin\Debug\ProjectGUI.exe.config
+F:\Semester 1 Projects\Semester 2\ProjectGUI\bin\Debug\ProjectGUI.exe
+F:\Semester 1 Projects\Semester 2\ProjectGUI\bin\Debug\ProjectGUI.pdb
+F:\Semester 1 Projects\Semester 2\ProjectGUI\bin\Debug\Guna.UI2.dll
+F:\Semester 1 Projects\Semester 2\ProjectGUI\bin\Debug\ProjectDLL.dll
+F:\Semester 1 Projects\Semester 2\ProjectGUI\bin\Debug\ProjectDLL.pdb
+F:\Semester 1 Projects\Semester 2\ProjectGUI\obj\Debug\ProjectGUI.csproj.AssemblyReference.cache
+F:\Semester 1 Projects\Semester 2\ProjectGUI\obj\Debug\ProjectGUI.UI.Add_Books.resources
+F:\Semester 1 Projects\Semester 2\ProjectGUI\obj\Debug\ProjectGUI.UI.Add_Student.resources
+F:\Semester 1 Projects\Semester 2\ProjectGUI\obj\Debug\ProjectGUI.UI.AdminMenu.resources
+F:\Semester 1 Projects\Semester 2\ProjectGUI\obj\Debug\ProjectGUI.LogIn_Page.resources
+F:\Semester 1 Projects\Semester 2\ProjectGUI\obj\Debug\ProjectGUI.Properties.Resources.resources
+F:\Semester 1 Projects\Semester 2\ProjectGUI\obj\Debug\ProjectGUI.UI.Remove_Book.resources
+F:\Semester 1 Projects\Semester 2\ProjectGUI\obj\Debug\ProjectGUI.UI.Remove_Student.resources
+F:\Semester 1 Projects\Semester 2\ProjectGUI\obj\Debug\ProjectGUI.UI.Search_Book.resources
+F:\Semester 1 Projects\Semester 2\ProjectGUI\obj\Debug\ProjectGUI.UI.Show_Book.resources
+F:\Semester 1 Projects\Semester 2\ProjectGUI\obj\Debug\ProjectGUI.UI.Sign_Up.resources
+F:\Semester 1 Projects\Semester 2\ProjectGUI\obj\Debug\ProjectGUI.UI.Student_Menu.resources
+F:\Semester 1 Projects\Semester 2\ProjectGUI\obj\Debug\ProjectGUI.UI.Update_Book_Info.resources
+F:\Semester 1 Projects\Semester 2\ProjectGUI\obj\Debug\ProjectGUI.UI.Update_Book.resources
+F:\Semester 1 Projects\Semester 2\ProjectGUI\obj\Debug\ProjectGUI.UI.Update_Student_Info.resources
+F:\Semester 1 Projects\Semester 2\ProjectGUI\obj\Debug\ProjectGUI.UI.Update_Student.resources
+F:\Semester 1 Projects\Semester 2\ProjectGUI\obj\Debug\ProjectGUI.UI.View_All_Books.resources
+F:\Semester 1 Projects\Semester 2\ProjectGUI\obj\Debug\ProjectGUI.UI.View_All_Students.resources
+F:\Semester 1 Projects\Semester 2\ProjectGUI\obj\Debug\ProjectGUI.csproj.GenerateResource.cache
+F:\Semester 1 Projects\Semester 2\ProjectGUI\obj\Debug\ProjectGUI.csproj.CoreCompileInputs.cache
+F:\Semester 1 Projects\Semester 2\ProjectGUI\obj\Debug\ProjectGUI.csproj.CopyComplete
+F:\Semester 1 Projects\Semester 2\ProjectGUI\obj\Debug\ProjectGUI.exe
+F:\Semester 1 Projects\Semester 2\ProjectGUI\obj\Debug\ProjectGUI.pdb
