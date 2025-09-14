@@ -9,7 +9,7 @@ app = Flask(__name__)
 model = joblib.load("model.pkl")
 
 # Configure Gemini API
-genai.configure(api_key="AIzaSyCbB0bDQG7J2jsSz9kn883sqxowVJeQPY0")
+genai.configure(api_key="Your-API-Key")
 gemini_model =  genai.GenerativeModel(model_name="gemini-2.5-flash-preview-05-20")
 @app.route("/", methods=["GET", "POST"])
 def index():
