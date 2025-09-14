@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insider Threat Detection</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="header"></div>
+    <div class="justify-center mx-auto flex mt-[100px]">
+        <!-- Register Form -->
+        <div class="bg-white p-6 rounded-lg shadow-lg w-96 mb-4">
+            <h2 class="text-2xl font-bold mb-4 text-center">Register</h2>
+            <form id="registerForm" class="flex flex-col gap-4">
+                <input type="text" id="registerUsername" placeholder="Username" class="border p-2 rounded">
+                <input type="email" id="registerEmail" placeholder="Email" class="border p-2 rounded">
+                <input type="password" id="registerPassword" placeholder="Password" class="border p-2 rounded">
+                <input type="text" id="registerIp" placeholder="IP Address" class="border p-2 rounded" disabled>
+                <input type="text" id="registerLocation" placeholder="Location" class="border p-2 rounded" disabled>
+                <button type="submit" class="bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Register</button>
+            </form>
+            <div id="registerResponseMessage" class="mt-4 text-center"></div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(function(){
+      $("#header").load("header.html");
+    });
+         // Register Form Handler
+         const registerForm = document.getElementById('registerForm');
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('registerUsername').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const ip_address = document.getElementById('registerIp').value;
+            const location = document.getElementById('registerLocation').value;
+
+            const registerResponseMessage = document.getElementById('registerResponseMessage');
+            try {
+                const response = await fetch('http://localhost:5000/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password, ip_address, location })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    registerResponseMessage.textContent = 'Registration successful!';
+                } else {
+                    registerResponseMessage.textContent = 'Error: ' + data.message;
+                }
+            } catch (error) {
+                registerResponseMessage.textContent = 'Error: ' + error.message;
+            }
+        });
+        async function fetchIPAndLocation() {
+    try {
+        const response = await fetch('https://ipinfo.io/json?token=f91593a02a5c6e'); 
+        const data = await response.json();
+
+        const ipField = document.getElementById('registerIp');
+        const locationField = document.getElementById('registerLocation');
+
+        ipField.value = data.ip;
+        locationField.value = `${data.city}, ${data.country}`; 
+    } catch (error) {
+        console.error('Error fetching IP/location:', error);
+    }
+}
+
+window.addEventListener('DOMContentLoaded', fetchIPAndLocation);
+    </script>
+</body>
+</html>

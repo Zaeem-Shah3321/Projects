@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Insider Threat Detection</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center">
+    <div id="header" class="mb-[15vh]"></div>
+
+    <div id="content" class="hidden w-full">
+    <div class="container mx-auto p-6 bg-white shadow-lg rounded-lg max-w-sm w-full">
+        <h2 class="text-2xl font-bold text-center text-blue-600 mb-6">Add New Record</h2>
+        
+        <!-- Form to Add New Record -->
+        <form id="addForm" class="space-y-4">
+            <div>
+                <input type="text" id="name" placeholder="Enter Name" required class="w-full p-4 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700 text-lg">
+            </div>
+            <div>
+                <input type="text" id="value" placeholder="Enter Value" required class="w-full p-4 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700 text-lg">
+            </div>
+            <div>
+                <button type="submit" class="w-full py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-500 transition duration-200">Add Data</button>
+            </div>
+        </form>
+    </div>
+
+    <h3 class="py-10 text-xl text-center">Data Records</h3>
+    <div class="container mx-auto p-6">
+        <table border="1" id="dataTable" class="min-w-full bg-white shadow-lg rounded-lg overflow-hidden">
+            <thead>
+                <tr class="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-bold">
+                    <th class="py-3 px-6 text-left">ID</th>
+                    <th class="py-3 px-6 text-left">Name</th>
+                    <th class="py-3 px-6 text-left">Value</th>
+                    <th class="py-3 px-6 text-left">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="text-gray-800">
+               
+            </tbody>
+        </table>
+    </div>
+</div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+         if (localStorage.getItem('token')) {
+            document.getElementById('content').classList.remove('hidden');
+         }
+        $(function(){
+      $("#header").load("header.html");
+    });
+        const apiUrl = 'http://localhost:5000/api/sample-data';
+        const user_id =  localStorage.getItem('user_id'); 
+
+        async function fetchData() {
+            console.log(user_id)
+            const res = await fetch(apiUrl);
+            const data = await res.json();
+            const tbody = document.querySelector('#dataTable tbody');
+            tbody.innerHTML = '';
+            data.forEach(record => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="py-4 px-6 text-left">${record.id}</td>
+                    <td contenteditable="true" class="edit-name py-4 px-6">${record.name}</td>
+                    <td contenteditable="true" class="edit-value py-4 px-6">${record.value}</td>
+                    <td class="py-4 px-6 text-left">
+                        <button  class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-400 transition duration-200" onclick="updateData(${record.id}, this)">Update</button>
+                        <button class="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-400 transition duration-200 ml-2" onclick="deleteData(${record.id})">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        document.getElementById('addForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const value = document.getElementById('value').value;
+
+            await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, value, user_id })
+            });
+
+            document.getElementById('addForm').reset();
+            fetchData();
+        });
+
+        async function updateData(id, btn) {
+            const row = btn.parentElement.parentElement;
+            const name = row.querySelector('.edit-name').innerText;
+            const value = row.querySelector('.edit-value').innerText;
+
+            await fetch(`${apiUrl}/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, value, user_id })
+            });
+
+            fetchData();
+        }
+
+        async function deleteData(id) {
+            await fetch(`${apiUrl}/${id}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id })
+            });
+
+            fetchData();
+        }
+
+        fetchData();
+
+        $(function(){
+            $("#header").load("Pages/header.html");
+        });
+
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+  const table = document.querySelector('#dataTable');
+
+  table.addEventListener('input', (event) => {
+    const target = event.target;
+    
+    if (target.matches('td[contenteditable="true"]')) {
+      const userInput = target.innerText.trim();
+
+      if (isMalicious(userInput)) {
+        sendMaliciousInputToAdmin(userInput);
+        alert('Your input contains potentially harmful content. The admin has been notified.');
+
+        target.innerText = '';
+      }
+    }
+  });
+
+  const inputs = document.querySelectorAll('input, textarea, select');
+  inputs.forEach(input => {
+    input.addEventListener('input', (event) => {
+      const userInput = event.target.value.trim();
+      if (isMalicious(userInput)) {
+        sendMaliciousInputToAdmin(userInput);
+        alert('Your input contains potentially harmful content. The admin has been notified.');
+        event.target.value = '';
+      }
+    });
+  });
+});
+
+
+function isMalicious(input) {
+  const sqlInjectionPatterns = /(\b(select|insert|delete|drop|update|alter|union|--|;|=|from)\b)/i;
+  const xssPatterns = /(<script|javascript:|onerror=|<img|<iframe)/i;
+
+  // If either pattern matches, it's malicious
+  return sqlInjectionPatterns.test(input) || xssPatterns.test(input);
+}
+
+function sendMaliciousInputToAdmin(userInput) {
+    const userIds=localStorage.getItem('user_id')
+  console.log(userIds)
+  const emailData = {
+    service_id: 'service_7qcvh2x',
+    template_id: 'template_pe74nfk', 
+    user_id: 'imXNZ00ScdvZ4OFVf', 
+    template_params: {
+      to_email: 'sheharyarxd@gmail.com',
+      subject: 'Potential Malicious Input Detected',
+      user: userIds,
+      user_input: userInput,
+      date: new Date().toLocaleString()
+    }
+  };
+
+  // Send the email using Email.js
+  emailjs.send(emailData.service_id, emailData.template_id, emailData.template_params, emailData.user_id)
+    .then((response) => {
+      console.log('Email sent successfully:', response);
+      location.reload()
+    })
+    .catch((error) => {
+      console.error('Error sending email:', error);
+    });
+}
+    </script>
+      
+
+</body>
+</html>

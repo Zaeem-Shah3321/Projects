@@ -1,0 +1,58 @@
+🛠 Backend (Node.js + Express + PostgreSQL)
+ User Identification (IP + Location)       -------------done
+
+ Keystroke Pattern Capture API             ---------------done
+
+ Mouse Movement Capture API                ---------------done
+
+ Session Time & Access Frequency API       ------------done
+
+ Data Modification API                    ------------done
+
+ Suspicious Behavior Detection
+
+ Blocking IP address and logging             ------------done
+
+ Sequelize Models and PostgreSQL Connection    --------------------done
+
+ Security Middlewares: Helmet, CORS             ----------------------done
+
+ API Rate Limit to stop spam attacks
+
+🗄️ PostgreSQL Database (Tables)
+users             -----------done
+
+keystrokes        ----------done
+
+mouse_movements    ---------done
+
+access_logs        -------done
+
+data_modifications   ------------done
+
+blocked_ips        ---------done
+
+🎨 Frontend (HTML + JavaScript)
+ Keystroke listener        -----done
+
+ Mouse movement tracker      ----------done
+
+ Page Load / Exit Time Tracker    ----------done
+
+ Data Modification Simulated Button   ------------done
+
+ Send all behavior to backend via Axios   ------------done
+
+🌐 APIs We'll Use
+IP Fetching: ipinfo.io
+
+Data Sending: /api/keystroke   done, /api/mouse     done, /api/session    done, /api/modification   ------------done
+
+Block Check: On login, verify if IP is blocked. -------------done
+
+
+
+
+
+
+---------------------------------------------------------------------------------- Allll Done -----------------------------------------------------------------------------------

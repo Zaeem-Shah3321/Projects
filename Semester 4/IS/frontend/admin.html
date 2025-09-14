@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+
+<body class="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 min-h-screen flex flex-col p-8">
+
+  <h1 class="text-4xl text-white font-bold mb-8 text-center">Admin Dashboard</h1>
+  <div class="flex justify-end mb-4">
+    <button onclick="logout()" class="bg-yellow-400 hover:bg-yellow-500 text-black font-bold px-4 py-2 rounded shadow">
+      Logout
+    </button>
+  </div>
+
+
+  <!-- User List -->
+  <div id="userList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+  <!-- Block IP Section -->
+  <div class="bg-white rounded-lg shadow-lg p-6 mt-10">
+    <h2 class="text-2xl font-bold mb-4">Block an IP</h2>
+
+    <div class="flex flex-col md:flex-row gap-4 mb-4">
+      <input id="blockIpInput" type="text" placeholder="Enter IP Address" class="border p-2 rounded w-full" />
+      <input id="blockReasonInput" type="text" placeholder="Enter Reason" class="border p-2 rounded w-full" />
+      <button onclick="blockIp()" class="bg-red-500 hover:bg-red-600 text-white w-full px-4 py-2 rounded">Block
+        IP</button>
+    </div>
+
+    <h2 class="text-xl font-bold mt-6 mb-2">Blocked IPs</h2>
+    <div id="blockedIpsList" class="space-y-2"></div>
+  </div>
+  <!-- Block Key Section -->
+  <div class="bg-white rounded-lg shadow-lg p-6 mt-10">
+    <h2 class="text-2xl font-bold mb-4">Block User Key</h2>
+
+    <!-- Dropdown for selecting User -->
+    <div class="mb-4">
+      <label for="userSelect" class="font-semibold">Select User</label>
+      <select id="userSelect" class="border p-2 rounded w-full" onchange="clearKeyInput()">
+        <option value="">Select a User</option>
+
+      </select>
+    </div>
+
+    <!-- Input for the key -->
+    <div class="mb-4">
+      <label for="keyInput" class="font-semibold">Enter Key to Block</label>
+      <input id="keyInput" type="text" placeholder="Enter Key" class="border p-2 rounded w-full" />
+      <small id="keyError" class="text-red-500 hidden">Please enter a valid key format!</small>
+    </div>
+
+    <!-- Reason for blocking the key -->
+    <div class="mb-4">
+      <label for="blockReasonInputs" class="font-semibold">Reason</label>
+      <input id="blockReasonInputs" type="text" placeholder="Enter Reason" class="border p-2 rounded w-full" />
+    </div>
+
+    <button onclick="blockKey()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">Block Key</button>
+
+    <!-- List of blocked keys -->
+    <h2 class="text-xl font-bold mt-6 mb-2">Blocked Keys</h2>
+    <div id="blockedKeysList" class="space-y-2"></div>
+  </div>
+
+
+  <!-- User Details Modal -->
+  <div id="userDetails" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+      <h2 class="text-2xl font-bold mb-4 text-center" id="userName">User Details</h2>
+
+      <div class="mb-4">
+        <h3 class="text-lg font-semibold mb-2">Risk Score</h3>
+        <div class="w-full bg-gray-200 rounded-full h-4">
+          <div id="riskBar" class="bg-red-500 h-4 rounded-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+        <p id="riskScoreText" class="text-center mt-2 font-bold text-gray-700"></p>
+      </div>
+
+      <div class="mb-4">
+        <h3 class="text-lg font-semibold mb-2">Last Login Sessions</h3>
+        <ul id="accessLogs" class="list-disc list-inside text-gray-600 space-y-1"></ul>
+      </div>
+
+      <div class="mb-4">
+        <h3 class="text-lg font-semibold mb-2">Typed Words</h3>
+        <ul id="typedWords" class="list-disc list-inside text-gray-600 space-y-1"></ul>
+      </div>
+
+      <div class="mb-4">
+        <h3 class="text-lg font-semibold mb-2">Data Modifications</h3>
+        <ul id="dataChanges" class="list-decimal list-inside text-gray-600 space-y-1"></ul>
+      </div>
+
+      <div class="flex justify-center">
+        <button onclick="closeDetails()"
+          class="mt-4 bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-full transition">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token');
+
+    loadUsers();
+
+    // Load all users
+    async function loadUsers() {
+      try {
+        const res = await axios.get('http://localhost:5000/api/auth/users', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const users = res.data;
+        const userList = document.getElementById('userList');
+        userList.innerHTML = '';
+
+        users.forEach(user => {
+          const card = document.createElement('div');
+          card.className = 'bg-white rounded-lg shadow-lg p-6 hover:scale-105 transform transition cursor-pointer';
+          card.innerHTML = `
+            <div class="text-center mb-6" id="user-${user.id}">
+  <h2 class="text-2xl font-extrabold text-gray-800 mb-2">${user.username}</h2>
+  <p class="text-sm text-gray-500 mb-1">ID: <span class="font-medium text-gray-700">${user.id}</span></p>
+  <p class="text-sm text-gray-500 mb-1">IP Address: <span class="font-medium text-gray-700">${user.ip_address}</span></p>
+  <p class="text-sm text-gray-500 mb-1">Location: <span class="font-medium text-gray-700">${user.location}</span></p>
+
+  <button 
+    class="toggle-block-btn bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-400 transition duration-200 mt-3" 
+    onclick="toggleBlockUser(${user.id}, ${user.blocked})">
+    ${user.blocked ? 'Unblock' : 'Block'}
+  </button>
+  <button 
+    class="watch-mouse-btn bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-400 transition duration-200 mt-3 ml-2"
+    onclick="askDateAndReplayMouse(${user.id})">
+    Watch Mouse Movement
+  </button>
+</div>
+          `;
+          card.onclick = () => showUserDetails(user.id, user.username);
+          userList.appendChild(card);
+        });
+
+      } catch (error) {
+        console.error('Error loading users:', error);
+      }
+    }
+
+    // Show user details
+    async function showUserDetails(userId, userName) {
+      document.getElementById('userName').innerText = userName;
+
+      try {
+        const accessLogs = await fetchAccessLogs(userId);
+
+        const accessLogList = document.getElementById('accessLogs');
+        accessLogList.innerHTML = '';
+        accessLogs.forEach(log => {
+          const li = document.createElement('li');
+          li.textContent = `Login: ${new Date(log.login_time).toLocaleString()}, Logout: ${log.logout_time ? new Date(log.logout_time).toLocaleString() : 'Still logged in'}, Duration: ${log.duration} sec, Ip Address: ${log.ip_address}, Location: ${log.location} `;
+          accessLogList.appendChild(li);
+        });
+
+        const keystrokeRes = await axios.get(`http://localhost:5000/api/keystroke/keystroke/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const words = keystrokeRes.data || [];
+        const wordsList = document.getElementById('typedWords');
+        const patterns = words.map(word => word.pattern);
+        wordsList.innerHTML = '';
+        patterns.forEach(word => {
+          const li = document.createElement('li');
+          li.textContent = word;
+          wordsList.appendChild(li);
+        });
+
+        const dataRes = await axios.get(`http://localhost:5000/api/sample-data/user/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const changes = dataRes.data.changes || [];
+        const changesList = document.getElementById('dataChanges');
+        changesList.innerHTML = '';
+        changes.forEach(change => {
+          const li = document.createElement('li');
+          li.textContent = change.description || 'Updated some record';
+          changesList.appendChild(li);
+        });
+
+        const riskScore = calculateRiskScore({
+          accessLogs: accessLogs,
+          typedWords: patterns,
+          dataChanges: changes,
+          user: {
+            ip_address_changed: false,
+            location_changed: false
+          }
+        });
+        updateRiskLevel(riskScore);
+
+      } catch (error) {
+        console.error('Error loading user details:', error);
+      }
+
+      document.getElementById('userDetails').classList.remove('hidden');
+      document.getElementById('userDetails').classList.add('flex');
+    }
+
+    // fetchAccessLogs 
+    async function fetchAccessLogs(userId) {
+      try {
+        const res = await axios.get(`http://localhost:5000/api/access-logs/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        return res.data;
+      } catch (error) {
+        console.error('Error fetching access logs:', error);
+        return [];
+      }
+    }
+
+    // Close details modal
+    function closeDetails() {
+      document.getElementById('userDetails').classList.add('hidden');
+      document.getElementById('userDetails').classList.remove('flex');
+    }
+    function calculateRiskScore({ accessLogs, typedWords, dataChanges, user }) {
+      let riskScore = 0;
+
+      const accessLogFactor = Math.min(accessLogs.length / 10, 1) * 20;
+      riskScore += accessLogFactor;
+
+      // Typed Words
+      const suspiciousWords = ['hack', 'admin', 'root', 'breach', 'attack', 'sql', 'drop', 'delete', 'insert', 'update'];
+      const verySuspiciousWords = ['hack', 'root', 'breach', 'attack'];
+
+      const normalSuspicious = typedWords.filter(word => suspiciousWords.includes(word.toLowerCase())).length;
+      const verySuspicious = typedWords.filter(word => verySuspiciousWords.includes(word.toLowerCase())).length;
+
+      riskScore += normalSuspicious * 5;
+      riskScore += verySuspicious * 10;
+
+      // Data Changes
+      if (dataChanges.length > 5) {
+        riskScore += 25;
+      } else {
+        riskScore += dataChanges.length * 3;
+      }
+
+      const nightAccess = accessLogs.filter(log => {
+        const hour = new Date(log.timestamp).getHours();
+        return hour >= 2 && hour <= 5;
+      }).length;
+
+      if (nightAccess > 2) {
+        riskScore += 15;
+      }
+
+      // Normalize
+      if (riskScore > 100) riskScore = 100;
+      if (riskScore < 0) riskScore = 0;
+
+      return Math.round(riskScore);
+    }
+
+    // Update Risk Bar
+    function updateRiskLevel(score) {
+      const riskBar = document.getElementById('riskBar');
+      const riskScoreText = document.getElementById('riskScoreText');
+
+      riskBar.style.width = `${score}%`;
+
+      if (score < 30) {
+        riskBar.className = 'bg-green-400 h-4 rounded-full transition-all duration-500';
+        riskScoreText.innerText = `Low Risk (${score}%)`;
+      } else if (score < 70) {
+        riskBar.className = 'bg-yellow-400 h-4 rounded-full transition-all duration-500';
+        riskScoreText.innerText = `Medium Risk (${score}%)`;
+      } else {
+        riskBar.className = 'bg-red-500 h-4 rounded-full transition-all duration-500';
+        riskScoreText.innerText = `High Risk (${score}%)`;
+      }
+    }
+
+
+
+    // Block a new IP
+    async function blockIp() {
+      const ip = document.getElementById('blockIpInput').value;
+      const reason = document.getElementById('blockReasonInput').value;
+
+      if (!ip || !reason) {
+        alert('Please enter both IP address and reason.');
+        return;
+      }
+
+      try {
+        await axios.post('http://localhost:5000/api/block-ip', { ip, reason }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        alert('IP blocked successfully!');
+        loadBlockedIps();
+      } catch (error) {
+        console.error('Error blocking IP:', error);
+        alert('Failed to block IP.');
+      }
+    }
+
+    // Load all blocked IPs
+    async function loadBlockedIps() {
+      try {
+        const res = await axios.get('http://localhost:5000/api/block-ip', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const blockedIps = res.data;
+        const list = document.getElementById('blockedIpsList');
+        list.innerHTML = '';
+
+        blockedIps.forEach(ip => {
+          const item = document.createElement('div');
+          item.className = 'flex justify-between items-center bg-gray-100 p-3 rounded';
+
+          item.innerHTML = `
+        <div>
+          <p class="font-semibold">${ip.ip_address}</p>
+          <p class="text-sm text-gray-600">${ip.reason}</p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="editBlockedIp(${ip.id}, '${ip.ip_address}', '${ip.reason}')" class="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded">Edit</button>
+          <button onclick="deleteBlockedIp(${ip.id})" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded">Delete</button>
+        </div>
+      `;
+
+          list.appendChild(item);
+        });
+
+      } catch (error) {
+        console.error('Error loading blocked IPs:', error);
+      }
+    }
+
+    // Delete blocked IP
+    async function deleteBlockedIp(id) {
+      if (!confirm('Are you sure you want to delete this blocked IP?')) return;
+
+      try {
+        await axios.delete(`http://localhost:5000/api/block-ip/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        alert('Blocked IP deleted.');
+        loadBlockedIps();
+      } catch (error) {
+        console.error('Error deleting IP:', error);
+      }
+    }
+
+    // Edit blocked IP
+    function editBlockedIp(id, currentIp, currentReason) {
+      const newIp = prompt('Enter new IP address:', currentIp);
+      const newReason = prompt('Enter new reason:', currentReason);
+
+      if (!newIp || !newReason) {
+        alert('Both IP and reason are required.');
+        return;
+      }
+
+      axios.put(`http://localhost:5000/api/block-ip/${id}`, { ip: newIp, reason: newReason }, {
+        headers: { Authorization: `Bearer ${token}` }
+      }).then(() => {
+        alert('Blocked IP updated.');
+        loadBlockedIps();
+      }).catch(err => {
+        console.error('Error updating IP:', err);
+      });
+    }
+
+
+    loadBlockedIps();
+
+
+    async function loadUsers1() {
+      try {
+        const res = await axios.get('http://localhost:5000/api/auth/users'); // Endpoint to fetch users
+        const userSelect = document.getElementById('userSelect');
+        res.data.forEach(user => {
+          const option = document.createElement('option');
+          option.value = user.id;
+          option.textContent = `${user.username}`;
+          userSelect.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      }
+    }
+
+    function clearKeyInput() {
+      document.getElementById('keyInput').value = '';
+      document.getElementById('keyError').classList.add('hidden');
+    }
+
+
+    async function blockKey() {
+      const userId = document.getElementById('userSelect').value;
+      const key = document.getElementById('keyInput').value;
+      const reason = document.getElementById('blockReasonInputs').value;
+      console.log(userId)
+      console.log(key)
+      console.log(reason)
+      if (!userId || !key || !reason) {
+        alert('Please fill in all fields.');
+        return;
+      }
+
+
+      try {
+        await axios.post('http://localhost:5000/api/blocked-keys', { key, userId, reason });
+        alert('Key blocked successfully!');
+        loadBlockedKeys();
+      } catch (error) {
+        console.error('Error blocking key:', error);
+        alert('Failed to block key.');
+      }
+    }
+
+    // Fetch and display all blocked keys
+    async function loadBlockedKeys() {
+      try {
+        const res = await axios.get('http://localhost:5000/api/blocked-keys');
+        const list = document.getElementById('blockedKeysList');
+        list.innerHTML = '';
+
+        res.data.forEach(blockedKey => {
+          const item = document.createElement('div');
+          item.className = 'flex justify-between items-center bg-gray-100 p-3 rounded';
+          item.innerHTML = `
+        <div>
+          <p class="font-semibold">Key: ${blockedKey.key}</p>
+          <p class="text-sm text-gray-600">User ID: ${blockedKey.user_id}</p>
+          <p class="text-sm text-gray-600">Reason: ${blockedKey.reason}</p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="deleteBlockedKey(${blockedKey.id})" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded">Delete</button>
+        </div>
+      `;
+          list.appendChild(item);
+        });
+      } catch (error) {
+        console.error('Error loading blocked keys:', error);
+      }
+    }
+
+    // Delete blocked key
+    async function deleteBlockedKey(id) {
+      if (!confirm('Are you sure you want to delete this blocked key?')) return;
+
+      try {
+        await axios.delete(`http://localhost:5000/api/blocked-keys/${id}`);
+        alert('Blocked key deleted.');
+        loadBlockedKeys();
+      } catch (error) {
+        console.error('Error deleting blocked key:', error);
+      }
+    }
+
+    loadUsers1();
+    loadBlockedKeys();
+
+    function toggleBlockUser(userId, isBlocked) {
+      const action = isBlocked ? 'unblock' : 'block';
+
+      axios.post(`http://localhost:5000/api/auth/admin/${action}-user/${userId}`)
+        .then(response => {
+          alert(response.data.message);
+          location.reload();
+        })
+        .catch(error => {
+          console.error('Error toggling user block status:', error);
+          alert('An error occurred. Please try again.');
+        });
+    }
+
+
+
+
+    async function askDateAndReplayMouse(userId) {
+      const datesResponse = await fetch(`http://localhost:5000/api/mouse-movements/dates/${userId}`);
+      const availableDates = await datesResponse.json();
+
+      if (!availableDates.length) {
+        alert("No mouse movement data available for this user.");
+        return;
+      }
+
+
+      let existingModal = document.getElementById('date-modal');
+      if (existingModal) existingModal.remove();
+
+      const modal = document.createElement('div');
+      modal.id = 'date-modal';
+      modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center';
+
+      const modalContent = document.createElement('div');
+      modalContent.className = 'bg-white p-6 rounded-lg shadow-lg w-1/3';
+      modal.appendChild(modalContent);
+
+
+      const dropdown = document.createElement('select');
+      dropdown.id = 'date-dropdown';
+      dropdown.className = 'mt-4 mb-4 p-2 border rounded w-full';
+      availableDates.forEach(date => {
+        const option = document.createElement('option');
+        option.value = date;
+        option.textContent = date;
+        dropdown.appendChild(option);
+      });
+
+      const button = document.createElement('button');
+      button.textContent = 'Watch Mouse Movements';
+      button.className = 'bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 ml-2 w-full';
+      button.onclick = () => {
+        const selectedDate = dropdown.value;
+        replayMouseMovements(userId, selectedDate);
+        modal.remove();
+      };
+
+
+      modalContent.appendChild(dropdown);
+      modalContent.appendChild(button);
+
+      const closeButton = document.createElement('button');
+      closeButton.textContent = 'Close';
+      closeButton.className = 'bg-red-500 text-white py-1 px-4 rounded hover:bg-red-600 mt-4 w-full';
+      closeButton.onclick = () => modal.remove();
+      modalContent.appendChild(closeButton);
+
+      document.body.appendChild(modal);
+    }
+    async function replayMouseMovements(userId, selectedDate) {
+      let iframe = document.getElementById('user-page');
+
+      if (!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.id = 'user-page';
+        iframe.src = 'http://localhost:5501/frontend/index.html';
+        iframe.style.width = '95%';
+        iframe.style.marginLeft = 'auto';
+        iframe.style.marginRight = 'auto';
+        iframe.style.height = '80vh';
+        iframe.style.border = 'none';
+        iframe.style.position = 'absolute';
+        iframe.style.top = '50px';
+        iframe.style.bottom = '50px';
+        document.body.appendChild(iframe);
+      }
+
+      iframe.onload = async () => {
+        const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+
+        // Ghost cursor setup
+        let ghostCursor = iframeDocument.getElementById('ghost-cursor');
+        if (!ghostCursor) {
+          ghostCursor = iframeDocument.createElement('div');
+          ghostCursor.id = 'ghost-cursor';
+          ghostCursor.style.position = 'fixed';
+          ghostCursor.style.width = '12px';
+          ghostCursor.style.height = '12px';
+          ghostCursor.style.background = 'red';
+          ghostCursor.style.borderRadius = '50%';
+          ghostCursor.style.zIndex = '9999';
+          ghostCursor.style.pointerEvents = 'none';
+          iframeDocument.body.appendChild(ghostCursor);
+        }
+
+        // Keystroke log box setup
+        let keyLog = iframeDocument.getElementById('keyboard-log');
+        if (!keyLog) {
+          keyLog = iframeDocument.createElement('div');
+          keyLog.id = 'keyboard-log';
+          keyLog.style.position = 'fixed';
+          keyLog.style.bottom = '10px';
+          keyLog.style.left = '10px';
+          keyLog.style.background = 'rgba(0,0,0,0.6)';
+          keyLog.style.color = 'white';
+          keyLog.style.padding = '5px 10px';
+          keyLog.style.borderRadius = '6px';
+          keyLog.style.fontFamily = 'monospace';
+          keyLog.style.zIndex = '9999';
+          iframeDocument.body.appendChild(keyLog);
+        }
+
+        // Fetch all data
+        const movementsRes = await fetch(`http://localhost:5000/api/mouse-movements/${userId}?date=${selectedDate}`);
+        const eventsRes = await fetch(`http://localhost:5000/api/mouse-events/${userId}?date=${selectedDate}`);
+        const keystrokesRes = await fetch(`http://localhost:5000/api/keystroke/date/${userId}?date=${selectedDate}`);
+
+        let movements = await movementsRes.json();
+        let events = await eventsRes.json();
+        let keystrokes = await keystrokesRes.json();
+
+        // Normalize timestamps
+        movements = movements.map(m => ({ ...m, timestamp: new Date(m.timestamp).getTime(), type: 'mousemove' }));
+        events = events.map(e => ({ ...e, timestamp: parseInt(e.timestamp), type: 'click' }));
+        keystrokes = keystrokes.map(k => ({ ...k, timestamp: new Date(k.timestamp).getTime(), type: 'keystroke' }));
+
+        const timeline = [...movements, ...events, ...keystrokes].sort((a, b) => a.timestamp - b.timestamp);
+        console.log(timeline);
+
+        let lastX = null;
+        let lastY = null;
+        let lastTime = null;
+
+        for (const entry of timeline) {
+          if (lastTime) {
+            const waitTime = entry.timestamp - lastTime;
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+          }
+
+          if (entry.type === 'mousemove') {
+            if (lastX !== null && lastY !== null) {
+              await animateCursor(ghostCursor, lastX, lastY, entry.x, entry.y, 100);
+            } else {
+              ghostCursor.style.left = `${entry.x}px`;
+              ghostCursor.style.top = `${entry.y}px`;
+            }
+            lastX = entry.x;
+            lastY = entry.y;
+          } else if (entry.type === 'click') {
+            ghostCursor.style.left = `${entry.x}px`;
+            ghostCursor.style.top = `${entry.y}px`;
+            simulateClick(iframeDocument, entry.x, entry.y);
+            lastX = entry.x;
+            lastY = entry.y;
+          } else if (entry.type === 'keystroke') {
+            keyLog.textContent += entry.pattern;
+          }
+
+          lastTime = entry.timestamp;
+        }
+
+        ghostCursor.style.display = 'none';
+      };
+    }
+
+    function animateCursor(cursor, startX, startY, endX, endY, duration) {
+      return new Promise(resolve => {
+        const startTime = Date.now();
+
+        const animate = () => {
+          const elapsed = Date.now() - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          const currentX = startX + (endX - startX) * progress;
+          const currentY = startY + (endY - startY) * progress;
+
+          cursor.style.left = `${currentX}px`;
+          cursor.style.top = `${currentY}px`;
+
+          if (progress < 1) {
+            requestAnimationFrame(animate);
+          } else {
+            resolve();
+          }
+        };
+
+        animate();
+      });
+    }
+
+    function simulateClick(doc, x, y) {
+      const target = doc.elementFromPoint(x, y);
+      if (target) {
+        const clickEvent = new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+          clientX: x,
+          clientY: y,
+        });
+        target.dispatchEvent(clickEvent);
+      }
+    }
+
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = "http://localhost:5501/frontend/index.html";
+    }
+
+
+  </script>
+
+</body>
+
+</html>

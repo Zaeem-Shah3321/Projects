@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Insider Threat Detection</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+</head>
+
+<body>
+  <header class="bg-gradient-to-r from-blue-400 via-violent-500 to-red-600 text-white p-4 fixed w-full top-0 left-0 z-10 shadow-lg">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+      <div class="logo text-3xl font-extrabold tracking-wider">
+        <h1><a href="../index.html">IS</a></h1>
+      </div>
+      <nav>
+        <ul class="flex space-x-8 items-center">
+          <li><a href="http://localhost:5501/frontend/Pages/login.html" class="hover:text-yellow-300 transition-colors duration-300">Login</a></li>
+          <li><a href="http://localhost:5501/frontend/Pages/signup.html" class="hover:text-yellow-300 transition-colors duration-300">Register</a></li>
+          <li><button id="adminLogin" class="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold px-4 py-2 rounded transition">Login as Admin</button></li>
+          <li><button id="logoutButton" style="display: none;" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded transition">Logout</button></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Blocked Key Popup -->
+  <div id="blockedKeyModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm">
+      <h3 class="text-xl font-bold text-red-500 mb-4">Blocked Key</h3>
+      <p id="blockedKeyMessage" class="text-gray-600">This key is blocked by the admin.</p>
+      <div class="flex justify-center">
+        <button onclick="closeBlockedKeyModal()" class="mt-4 bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-full transition">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let pattern = '';
+    let blockedKeys = [];
+    const userId = localStorage.getItem('user_id');
+    const token = localStorage.getItem('token');
+
+    window.onload = async () => {
+      blockedKeys = await fetchBlockedKeys(userId);
+    };
+
+    document.addEventListener('keydown', (event) => {
+      const pressedKey = event.key;
+      if (blockedKeys.includes(pressedKey)) {
+        showBlockedKeyModal(pressedKey);
+        event.preventDefault();
+      }
+    });
+
+    document.addEventListener('keydown', function (event) {
+      pattern += event.key + '-';
+    });
+
+    setInterval(() => {
+      if (pattern.length > 0) {
+        axios.post('http://localhost:5000/api/keystroke', {
+          user_id: localStorage.getItem('user_id'),
+          pattern: pattern
+        })
+          .then(response => {
+            console.log('Keystroke saved:', response.data);
+            pattern = '';
+          })
+          .catch(error => {
+            console.error('Error sending keystroke:', error);
+          });
+      }
+    }, 5000);
+
+    let lastSentTime = Date.now();
+    let sending = false;
+
+    document.addEventListener('mousemove', (event) => {
+      const now = Date.now();
+      if (!sending && (now - lastSentTime > 500)) {
+        sending = true;
+        const x = event.clientX;
+        const y = event.clientY;
+
+        axios.post('http://localhost:5000/api/mouse', { user_id: localStorage.getItem('user_id'), x, y })
+          .then(() => {
+            lastSentTime = Date.now();
+          })
+          .catch((error) => {
+            console.error('Failed to send mouse movement', error);
+          })
+          .finally(() => {
+            setTimeout(() => {
+              sending = false;
+            }, 5000);
+          });
+      }
+    });
+
+    const logoutButton = document.getElementById('logoutButton');
+    if (token) logoutButton.style.display = 'block';
+
+    logoutButton.addEventListener('click', async () => {
+      const decodedToken = jwt_decode(token);
+      const user_id = decodedToken.userId;
+
+      try {
+        const response = await fetch('http://localhost:5000/api/auth/logout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ user_id }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          localStorage.removeItem('token');
+          location.reload();
+        } else {
+          alert(data.message);
+        }
+      } catch (error) {
+        alert('Error logging out: ' + error.message);
+      }
+    });
+
+    function showBlockedKeyModal(key) {
+      const modal = document.getElementById('blockedKeyModal');
+      const message = document.getElementById('blockedKeyMessage');
+      message.textContent = `The key "${key}" is blocked by the admin.`;
+      modal.classList.remove('hidden');
+    }
+
+    function closeBlockedKeyModal() {
+      const modal = document.getElementById('blockedKeyModal');
+      modal.classList.add('hidden');
+    }
+
+    async function fetchBlockedKeys(userId) {
+      try {
+        const response = await axios.get(`http://localhost:5000/api/blocked-keys/user/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        return response.data.map(keyObj => keyObj.key);
+      } catch (error) {
+        console.error('Error fetching blocked keys:', error);
+        return [];
+      }
+    }
+
+    document.addEventListener('click', (event) => {
+      const mouseClickData = {
+        user_id: userId,
+        type: 'click',
+        x: event.clientX,
+        y: event.clientY,
+        timestamp: Date.now()
+      };
+      sendEventToServer(mouseClickData);
+    });
+
+    document.addEventListener('mousedown', (event) => {
+      const mouseDownData = {
+        user_id: userId,
+        type: 'mousedown',
+        x: event.clientX,
+        y: event.clientY,
+        button: event.button,
+        timestamp: Date.now()
+      };
+      sendEventToServer(mouseDownData);
+    });
+
+    document.addEventListener('mouseup', (event) => {
+      const mouseUpData = {
+        user_id: userId,
+        type: 'mouseup',
+        x: event.clientX,
+        y: event.clientY,
+        timestamp: Date.now()
+      };
+      sendEventToServer(mouseUpData);
+    });
+
+    function sendEventToServer(eventData) {
+      fetch('http://localhost:5000/api/mouse-events/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(eventData)
+      });
+    }
+
+    // Admin Login Logic
+    document.getElementById('adminLogin').addEventListener('click', function () {
+      const username = prompt('Enter admin username:');
+      const password = prompt('Enter admin password:');
+
+      if (username === 'admin' && password === '123') {
+        alert('Admin login successful!');
+        window.location.href = 'admin.html';
+      } else {
+        alert('Invalid admin credentials.');
+      }
+    });
+  </script>
+</body>
+
+</html>
