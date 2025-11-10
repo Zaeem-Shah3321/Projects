@@ -1,0 +1,6 @@
+1. Source: 10.10.31.163 Port: 60342
+2. Destination: 216.58.209.138 Port: 443
+3. Source: 10.10.31.163 Port: 60342
+4. Sequence Number (raw): 877426034
+5. Acknowledgment number (raw): 3358529658 , Sequence Number (raw): 877426034
+
