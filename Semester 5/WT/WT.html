@@ -1,0 +1,699 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Web Technologies — Sectioned Quiz (Fixed)</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>
+        :root {
+            --bg: #f4f7fb;
+            --card: #ffffff;
+            --muted: #6b7280;
+            --accent: #4f46e5;
+            --accent-2: #06b6d4;
+            --good: #16a34a;
+            --bad: #dc2626;
+            --glass: rgba(255, 255, 255, 0.7);
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: Inter, ui-sans-serif, system-ui, Arial;
+            margin: 24px;
+            background: linear-gradient(180deg, #eef2ff, #f8fafc);
+            color: #0f172a
+        }
+
+        .wrap {
+            max-width: 880px;
+            margin: 0 auto
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px
+        }
+
+        h1 {
+            font-size: 20px;
+            margin: 0
+        }
+
+        .meta {
+            color: var(--muted);
+            font-size: 13px
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+            margin-bottom: 16px
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px
+        }
+
+        .section-title h2 {
+            margin: 0;
+            font-size: 18px;
+            color: var(--accent)
+        }
+
+        .progress-bar {
+            height: 10px;
+            background: #e6eefc;
+            border-radius: 999px;
+            overflow: hidden;
+            flex: 1;
+            margin-left: 12px
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent), var(--accent-2));
+            transition: width .35s ease
+        }
+
+        .qbox {
+            margin-top: 14px;
+            padding: 18px;
+            border-radius: 10px;
+            background: linear-gradient(180deg, rgba(79, 70, 229, 0.04), rgba(6, 182, 212, 0.02));
+            border: 1px solid rgba(79, 70, 229, 0.06)
+        }
+
+        .qhead {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px
+        }
+
+        .qtext {
+            font-weight: 700;
+            margin: 10px 0 12px;
+            white-space: pre-wrap;
+        }
+
+        .options {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px
+        }
+
+        .opt {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #e6eefc;
+            background: linear-gradient(180deg, #fff, #fbfdff);
+            cursor: pointer;
+            transition: all .12s
+        }
+
+        .opt:hover {
+            transform: translateY(-2px)
+        }
+
+        .opt input {
+            transform: scale(1.02)
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 14px
+        }
+
+        button {
+            cursor: pointer;
+            border: 0;
+            padding: 10px 14px;
+            border-radius: 8px;
+            background: var(--accent);
+            color: #fff;
+            font-weight: 600;
+            box-shadow: 0 6px 16px rgba(79, 70, 229, 0.12);
+        }
+
+        button.ghost {
+            background: #fff;
+            color: var(--accent);
+            border: 1px solid rgba(79, 70, 229, 0.12);
+            box-shadow: none
+        }
+
+        button:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none
+        }
+
+        .feedback {
+            margin-top: 12px;
+            font-weight: 700
+        }
+
+        .feedback.good {
+            color: var(--good)
+        }
+
+        .feedback.bad {
+            color: var(--bad)
+        }
+
+        .section-result {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: center;
+            justify-content: center;
+            padding: 18px
+        }
+
+        .final {
+            text-align: center;
+            padding: 18px
+        }
+
+        .small {
+            font-size: 13px;
+            color: var(--muted)
+        }
+
+        .footer {
+            margin-top: 20px;
+            color: var(--muted);
+            font-size: 13px;
+            text-align: center
+        }
+
+        @media (max-width:640px) {
+            body {
+                margin: 12px
+            }
+
+            .qtext {
+                font-size: 15px
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <header>
+            <div>
+                <h1>Web Technologies — Sectioned Quiz</h1>
+                <div class="meta">Flow: HTML → CSS → JavaScript → jQuery → Bootstrap → PHP</div>
+            </div>
+        </header>
+
+        <div id="mainCard" class="card">
+            <div class="section-title">
+                <h2 id="sectionTitle">Loading...</h2>
+                <div style="display:flex;align-items:center;gap:12px; width:60%;">
+                    <div class="small">Section progress</div>
+                    <div class="progress-bar" aria-hidden>
+                        <div id="sectionProgress" class="progress-fill"></div>
+                    </div>
+                    <div id="qCounter" class="small">0 / 0</div>
+                </div>
+            </div>
+
+            <div class="qbox" id="qbox">
+                <div class="qhead">
+                    <div class="small" id="qNumber">Q 0</div>
+                    <div class="small">Topic progress: <span id="topicScore">0/0</span></div>
+                </div>
+
+                <div id="questionText" class="qtext">Loading question…</div>
+
+                <ul id="optionsList" class="options"></ul>
+
+                <div class="controls">
+                    <button id="nextBtn" disabled>Next Question</button>
+                    <button id="prevBtn" class="ghost" disabled>Previous</button>
+                    <div style="flex:1"></div>
+                    <div class="small" id="liveFeedback"></div>
+                </div>
+
+                <div id="feedback" class="feedback" style="display:none"></div>
+            </div>
+        </div>
+
+        <div id="sectionResultCard" class="card" style="display:none">
+            <div class="section-result">
+                <div id="sectionResultTitle" style="font-size:18px;font-weight:800"></div>
+                <div id="sectionResultText" class="small"></div>
+            </div>
+        </div>
+
+        <div id="finalCard" class="card" style="display:none">
+            <div class="final">
+                <h2>All Sections Completed</h2>
+                <div id="grandResult" style="font-size:20px;font-weight:800;margin-top:6px"></div>
+                <div id="breakdown" style="margin-top:12px"></div>
+                <div style="margin-top:18px">
+                    <button id="restartBtn" class="ghost">Restart Quiz</button>
+                    <button id="downloadBtn">Download Results (JSON)</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">You must select an answer to reveal whether it is correct. After finishing each section the
+            quiz will show the section result and continue automatically.</div>
+    </div>
+
+    <script>
+        /* Questions extracted from PDF (MCQ + T/F) — same as before.
+           Fix: use textContent instead of innerHTML for question and option texts,
+           so any HTML-like content displays literally.
+        */
+
+        const sections = [
+            {
+                title: 'HTML',
+                questions: [
+                    { type: 'mcq', question: 'What does HTML stand for?', options: ['Hyper Text Markup Language', 'High Tech Modern Language', 'Hyper Transfer Markup Language', 'Home Tool Markup Language'], answer: 0 },
+                    { type: 'mcq', question: 'Which tag is used to create a hyperlink in HTML?', options: ['<link>', '<a>', '<href>', '<hyperlink>'], answer: 1 },
+                    { type: 'mcq', question: 'What is the correct HTML element for the largest heading?', options: ['<h6>', '<head>', '<h1>', '<heading>'], answer: 2 },
+                    { type: 'mcq', question: 'Which character is used to indicate an end tag?', options: ['^', '*', '/', '\\\\'], answer: 2 },
+                    { type: 'mcq', question: 'Which attribute is used to specify a unique id for an HTML element?', options: ['class', 'id', 'name', 'unique'], answer: 1 },
+                    { type: 'mcq', question: 'Which HTML element is used to define an internal style sheet?', options: ['<css>', '<script>', '<style>', '<link>'], answer: 2 },
+                    { type: 'mcq', question: 'Which HTML tag is used to define an unordered list?', options: ['<ol>', '<list>', '<ul>', '<li>'], answer: 2 },
+                    { type: 'mcq', question: 'Inline elements in HTML normally display without starting a new line. Which of these is an inline element?', options: ['<div>', '<p>', '<span>', '<section>'], answer: 2 },
+                    { type: 'mcq', question: 'Which HTML5 element is used to specify a footer for a document or section?', options: ['<bottom>', '<footer>', '<section>', '<div id=\"footer\">'], answer: 1 },
+                    { type: 'mcq', question: 'Which input type defines a slider control?', options: ['search', 'range', 'slider', 'controls'], answer: 1 },
+                    { type: 'tf', question: 'HTML is a programming language.', options: ['True', 'False'], answer: 1 },
+                    { type: 'tf', question: 'The <br> tag has a closing tag.', options: ['True', 'False'], answer: 1 },
+                    { type: 'tf', question: 'The <title> tag is placed inside the <body> section.', options: ['True', 'False'], answer: 1 },
+                    { type: 'tf', question: 'The alt attribute in an <img> tag is mandatory for validation.', options: ['True', 'False'], answer: 0 },
+                    { type: 'tf', question: 'Block-level elements always start on a new line and take up the full width available.', options: ['True', 'False'], answer: 0 },
+                    { type: 'tf', question: 'The <head> element contains meta-information about the HTML document.', options: ['True', 'False'], answer: 0 },
+                    { type: 'tf', question: 'In HTML, attributes must always be enclosed in double quotes.', options: ['True', 'False'], answer: 1 },
+                    { type: 'tf', question: 'The <div> element is an inline container.', options: ['True', 'False'], answer: 1 },
+                    { type: 'tf', question: 'HTML comments are written as /* This is a comment */.', options: ['True', 'False'], answer: 1 },
+                    { type: 'tf', question: 'The <table> element is used to create a table, and the <td> element defines a table header cell.', options: ['True', 'False'], answer: 1 }
+                ]
+            },
+            {
+                title: 'CSS',
+                questions: [
+                    { type: 'mcq', question: 'What does CSS stand for?', options: ['Creative Style Sheets', 'Cascading Style Sheets', 'Computer Style Sheets', 'Colorful Style Sheets'], answer: 1 },
+                    { type: 'mcq', question: 'Which HTML attribute is used to define inline styles?', options: ['class', 'font', 'styles', 'style'], answer: 3 },
+                    { type: 'mcq', question: 'Which CSS property is used to change the background color?', options: ['color', 'bgcolor', 'background-color', 'bg-color'], answer: 2 },
+                    { type: 'mcq', question: 'How do you select an element with the id \"header\"?', options: ['#header', '.header', 'header', '*header'], answer: 0 },
+                    { type: 'mcq', question: 'Which property is used to change the font of an element?', options: ['font-style', 'text-style', 'font-family', 'font-weight'], answer: 2 },
+                    { type: 'mcq', question: 'How do you make each word in a text start with a capital letter?', options: ['text-transform: capitalize', 'text-style: capital', 'transform: capitalize', 'font-variant: small-caps'], answer: 0 },
+                    { type: 'mcq', question: "Which property controls the space between the element's border and its content?", options: ['margin', 'spacing', 'padding', 'border-spacing'], answer: 2 },
+                    { type: 'mcq', question: 'How do you apply a style to all <p> elements inside all <div> elements?', options: ['div.p', 'div p', 'div + p', 'p.div'], answer: 1 },
+                    { type: 'mcq', question: 'Which position value places an element relative to the browser window?', options: ['static', 'absolute', 'fixed', 'relative'], answer: 2 },
+                    { type: 'mcq', question: 'In the Box Model, what is the correct order of components from inside out?', options: ['Margin, Border, Padding, Content', 'Content, Padding, Border, Margin', 'Padding, Content, Margin, Border', 'Content, Margin, Padding, Border'], answer: 1 },
+                    { type: 'tf', question: 'CSS can be used to change the layout of a webpage.', options: ['True', 'False'], answer: 0 },
+                    { type: 'tf', question: 'The margin property can have negative values.', options: ['True', 'False'], answer: 0 },
+                    { type: 'tf', question: 'External CSS is defined within the <body> section of an HTML page.', options: ['True', 'False'], answer: 1 },
+                    { type: 'tf', question: 'The float property can be used to wrap text around an image.', options: ['True', 'False'], answer: 0 },
+                    { type: 'tf', question: 'The z-index property only works on elements with a static position.', options: ['True', 'False'], answer: 1 },
+                    { type: 'tf', question: 'In CSS, /* is used for single-line comments.', options: ['True', 'False'], answer: 1 },
+                    { type: 'tf', question: 'The display: none; property removes an element from the document flow and hides it.', options: ['True', 'False'], answer: 0 },
+                    { type: 'tf', question: 'The border property requires you to define the border-style first.', options: ['True', 'False'], answer: 0 },
+                    { type: 'tf', question: 'The font-weight property can be set to "bold" or a value between 100 and 900.', options: ['True', 'False'], answer: 0 },
+                    { type: 'tf', question: 'The :hover pseudo-class can be used on any HTML element.', options: ['True', 'False'], answer: 0 }
+                ]
+            },
+            {
+                title: 'JavaScript',
+                questions: [
+                    { type: 'mcq', question: 'Which of the following is a correct way to declare a JavaScript variable?', options: ['variable name;', 'v name;', 'let name;', 'string name;'], answer: 2 },
+                    { type: 'mcq', question: 'Inside which HTML element do we put the JavaScript code?', options: ['<javascript>', '<js>', '<scripting>', '<script>'], answer: 3 },
+                    { type: 'mcq', question: 'What will console.log(typeof null) output?', options: ['"null"', '"undefined"', '"object"', '"number"'], answer: 2 },
+                    { type: 'mcq', question: 'How do you write a "Hello World" message in an alert box?', options: ['msg("Hello World");', 'alertBox("Hello World");', 'alert("Hello World");', 'message("Hello World");'], answer: 2 },
+                    { type: 'mcq', question: 'Which method is used to remove the last element from an array?', options: ['pop()', 'shift()', 'splice()', 'push()'], answer: 0 },
+                    { type: 'mcq', question: 'What is the correct syntax for an "if" statement in JavaScript?', options: ['if i == 5 then', 'if (i == 5)', 'if i = 5', 'if i = 5 then'], answer: 1 },
+                    { type: 'mcq', question: 'Which operator is used to assign a value to a variable?', options: ['x', '=', '*', '-'], answer: 1 },
+                    { type: 'mcq', question: 'What will console.log(2 + "2") output?', options: ['4', '"4"', '22', '"22"'], answer: 3 },
+                    { type: 'mcq', question: 'Which function is used to parse a string to an integer?', options: ['parseInteger()', 'Number()', 'parseInt()', 'stringToNumber()'], answer: 2 },
+                    { type: 'mcq', question: 'What keyword is used to declare a constant in JavaScript?', options: ['let', 'var', 'constant', 'const'], answer: 3 },
+                    { type: 'tf', question: 'JavaScript is the same as Java.', options: ['True', 'False'], answer: 1 },
+                    { type: 'tf', question: 'The === operator performs strict equality comparison, checking both value and data type.', options: ['True', 'False'], answer: 0 },
+                    { type: 'tf', question: 'The var keyword has function scope, while let and const have block scope.', options: ['True', 'False'], answer: 0 },
+                    { type: 'tf', question: 'JavaScript is a case-sensitive language.', options: ['True', 'False'], answer: 0 },
+                    { type: 'tf', question: 'The console.log() function is used to write data to the web page.', options: ['True', 'False'], answer: 1 },
+                    { type: 'tf', question: 'An Array in JavaScript can hold elements of different data types.', options: ['True', 'False'], answer: 0 },
+                    { type: 'tf', question: 'NaN === NaN returns true.', options: ['True', 'False'], answer: 1 },
+                    { type: 'tf', question: 'The setTimeout function is used to execute a function repeatedly at a specified interval.', options: ['True', 'False'], answer: 1 },
+                    { type: 'tf', question: 'In JavaScript, 0 is a falsy value.', options: ['True', 'False'], answer: 0 },
+                    { type: 'tf', question: 'The querySelector() method can be used to select an element by its ID, class, or tag name.', options: ['True', 'False'], answer: 0 }
+                ]
+            },
+            {
+                title: 'jQuery',
+                questions: [
+                    { type: 'mcq', question: 'What is the correct syntax for selecting all <p> elements with jQuery?', options: ['$("p")', '$("p").all()', 'select("p")', '$("p").select()'], answer: 0 },
+                    { type: 'mcq', question: 'Which jQuery method is used to hide a selected element?', options: ['display(none)', 'visible(false)', 'hide()', 'remove()'], answer: 2 },
+                    { type: 'mcq', question: 'Which sign does jQuery use as a shortcut for the jQuery keyword?', options: ['%', '&', '?', '$'], answer: 3 },
+                    { type: 'mcq', question: 'Inside which HTML element do we typically put the jQuery CDN link?', options: ['<body>', '<head>', '<div>', '<footer>'], answer: 1 },
+                    { type: 'mcq', question: 'Which jQuery method is used to perform an asynchronous HTTP (Ajax) request?', options: ['$.get()', '$.ajax()', '$.load()', 'All of the above'], answer: 3 },
+                    { type: 'mcq', question: 'What is the correct jQuery code to set the text of all <div> elements to "Hello"?', options: ['$("div").text("Hello");', '$("div").html("Hello");', '$("div").value("Hello");', '$("div").innerHTML("Hello");'], answer: 0 },
+                    { type: 'mcq', question: 'Which jQuery method is used to attach a click event handler to selected elements?', options: ['onclick()', 'click()', 'handleClick()', 'addClick()'], answer: 1 },
+                    { type: 'mcq', question: 'What does the following code do? $("#test")', options: ['Selects all elements with class="test"', 'Selects the first element with id="test"', 'Selects all <test> elements', 'Creates a new element with id="test"'], answer: 1 },
+                    { type: 'mcq', question: 'Which method is used to remove the selected elements from the DOM?', options: ['delete()', 'remove()', 'detach()', 'empty()'], answer: 1 },
+                    { type: 'mcq', question: 'Which jQuery method is used to add a class to selected elements?', options: ['addClass()', 'appendClass()', 'createClass()', 'toggleClass()'], answer: 0 },
+                    { type: 'tf', question: 'jQuery is a programming language.', options: ['True', 'False'], answer: 1 },
+                    { type: 'tf', question: 'The $(document).ready() function is used to make sure the code runs only after the DOM is fully loaded.', options: ['True', 'False'], answer: 0 },
+                    { type: 'tf', question: 'The $("p.intro") selector selects all <p> elements with class="intro".', options: ['True', 'False'], answer: 0 },
+                    { type: 'tf', question: 'jQuery code can be written in the same file as HTML code.', options: ['True', 'False'], answer: 0 },
+                    { type: 'tf', question: 'The fadeIn() method can be used to show hidden elements.', options: ['True', 'False'], answer: 0 },
+                    { type: 'tf', question: 'The append() method inserts content at the beginning of the selected elements.', options: ['True', 'False'], answer: 1 },
+                    { type: 'tf', question: 'The val() method is used to get or set the value of form elements.', options: ['True', 'False'], answer: 0 },
+                    { type: 'tf', question: '$("div > p") selects all <p> elements that are direct children of a <div> element.', options: ['True', 'False'], answer: 0 },
+                    { type: 'tf', question: 'The each() method is used to iterate over a jQuery object of matched elements.', options: ['True', 'False'], answer: 0 },
+                    { type: 'tf', question: '$.noConflict() is used to prevent other libraries from using the $ symbol.', options: ['True', 'False'], answer: 1 }
+                ]
+            },
+            {
+                title: 'Bootstrap',
+                questions: [
+                    { type: 'mcq', question: 'What is Bootstrap primarily used for?', options: ['Backend development', 'Database management', 'Frontend development and creating responsive websites', 'Server configuration'], answer: 2 },
+                    { type: 'mcq', question: 'Which class in Bootstrap is used to create a full-width container?', options: ['.container-full', '.container-fluid', '.container-width', '.full-container'], answer: 1 },
+                    { type: 'mcq', question: 'In Bootstrap, what does the "md" in col-md-6 stand for?', options: ['Mini Device', 'Maximum Display', 'Medium Device', 'Main Design'], answer: 2 },
+                    { type: 'mcq', question: 'Which Bootstrap component is used for creating a navigation bar?', options: ['.navbox', '.navigation', '.navbar', '.nav-bar'], answer: 2 },
+                    { type: 'mcq', question: 'What is the correct Bootstrap class for creating a primary button?', options: ['.btn-primary', '.button-primary', '.btn-main', '.primary-btn'], answer: 0 },
+                    { type: 'mcq', question: 'Which Bootstrap class is used to create a grid row?', options: ['.grid-row', '.row', '.grid', '.g-row'], answer: 1 },
+                    { type: 'mcq', question: "How many columns does Bootstrap's grid system have by default?", options: ['10', '12', '16', '8'], answer: 1 },
+                    { type: 'mcq', question: 'Which Bootstrap class adds rounded corners to an image?', options: ['.img-rounded', '.rounded', '.img-circle', '.rounded-image'], answer: 1 },
+                    { type: 'mcq', question: 'What does the following Bootstrap class do: text-center?', options: ['Centers the text horizontally', 'Centers the text vertically', 'Changes text color', 'Makes text bold'], answer: 0 },
+                    { type: 'mcq', question: 'Which Bootstrap component is used for displaying dismissible alert messages?', options: ['.message', '.alert', '.notification', '.warning'], answer: 1 },
+                    { type: 'tf', question: 'Bootstrap is a JavaScript framework.', options: ['True', 'False'], answer: 1 },
+                    { type: 'tf', question: "Bootstrap's grid system is based on Flexbox.", options: ['True', 'False'], answer: 0 },
+                    { type: 'tf', question: 'The .container class creates a fixed-width container.', options: ['True', 'False'], answer: 0 },
+                    { type: 'tf', question: 'Bootstrap requires jQuery to work.', options: ['True', 'False'], answer: 1 },
+                    { type: 'tf', question: 'You can customize Bootstrap by modifying the source SCSS files.', options: ['True', 'False'], answer: 0 },
+                    { type: 'tf', question: 'The col-sm-4 class means the column will take 4 units on small devices and above.', options: ['True', 'False'], answer: 0 },
+                    { type: 'tf', question: 'Bootstrap includes built-in support for modal dialogs.', options: ['True', 'False'], answer: 0 },
+                    { type: 'tf', question: 'All Bootstrap components work without any CSS classes.', options: ['True', 'False'], answer: 1 },
+                    { type: 'tf', question: 'The .btn-success class creates a green-colored button.', options: ['True', 'False'], answer: 0 },
+                    { type: 'tf', question: "Bootstrap's responsive breakpoints are based on rem units.", options: ['True', 'False'], answer: 1 }
+                ]
+            },
+            {
+                title: 'PHP',
+                questions: [
+                    { type: 'mcq', question: 'What does PHP stand for?', options: ['Private Home Page', 'PHP: Hypertext Preprocessor', 'Personal Hypertext Processor', 'Programming Hypertext Preprocessor'], answer: 1 },
+                    { type: 'mcq', question: 'Which of the following is the correct way to end a PHP statement?', options: ['</php>', '; (semicolon)', '> (angle bracket)', '. (period)'], answer: 1 },
+                    { type: 'mcq', question: 'How do you create a constant in PHP?', options: ['constant("NAME", "value");', 'define("NAME", "value");', 'const NAME = "value";', 'Both b and c'], answer: 3 },
+                    { type: 'mcq', question: 'Which superglobal variable holds information about headers, paths, and script locations?', options: ['$_GET', '$_SERVER', '$_SESSION', '$_GLOBALS'], answer: 1 },
+                    { type: 'mcq', question: 'What is the result of echo "1" + "2"?', options: ['"12" (string concatenation)', '3 (integer sum)', '"3" (string)', 'Error'], answer: 1 },
+                    { type: 'mcq', question: 'Which function is used to redirect a user to a different page?', options: ['redirect()', 'location()', 'header()', 'forward()'], answer: 2 },
+                    { type: 'mcq', question: 'What does the === operator check?', options: ['Value equality only', 'Reference equality', 'Value and type equality', 'Type equality only'], answer: 2 },
+                    { type: 'mcq', question: 'Which function is used to start a session in PHP?', options: ['session_start()', 'start_session()', 'session_begin()', 'begin_session()'], answer: 0 },
+                    { type: 'mcq', question: 'What is the correct way to include a file in PHP?', options: ['include "file.php";', '#include "file.php";', 'import "file.php";', 'require_once();'], answer: 0 },
+                    { type: 'mcq', question: 'Which function is used to get the length of a string?', options: ['len()', 'size()', 'length()', 'strlen()'], answer: 3 },
+                    { type: 'tf', question: 'PHP is a client-side scripting language.', options: ['True', 'False'], answer: 1 },
+                    { type: 'tf', question: 'PHP variables are case-sensitive.', options: ['True', 'False'], answer: 0 },
+                    { type: 'tf', question: 'PHP supports multiple inheritance.', options: ['True', 'False'], answer: 1 },
+                    { type: 'tf', question: 'The $_POST array is used to collect form data sent with the GET method.', options: ['True', 'False'], answer: 1 },
+                    { type: 'tf', question: 'In PHP, both include and require will produce a fatal error if the file is not found.', options: ['True', 'False'], answer: 1 },
+                    { type: 'tf', question: 'PHP can be embedded directly in HTML.', options: ['True', 'False'], answer: 0 },
+                    { type: 'tf', question: 'The count() function can be used to count the number of elements in an array.', options: ['True', 'False'], answer: 0 },
+                    { type: 'tf', question: 'In PHP, classes can have both properties and methods.', options: ['True', 'False'], answer: 0 },
+                    { type: 'tf', question: 'The echo statement can output multiple strings separated by commas.', options: ['True', 'False'], answer: 0 },
+                    { type: 'tf', question: 'PHP automatically converts variables to the correct data type based on context.', options: ['True', 'False'], answer: 0 }
+                ]
+            }
+        ];
+
+        let sectionIndex = 0;
+        let qIndex = 0;
+        let userAnswersPerSection = sections.map(s => Array(s.questions.length).fill(null));
+        let sectionScores = sections.map(() => ({ correct: 0, total: 0 }));
+        let overallAnswered = 0;
+
+        const sectionTitle = document.getElementById('sectionTitle');
+        const sectionProgress = document.getElementById('sectionProgress');
+        const qCounter = document.getElementById('qCounter');
+        const questionText = document.getElementById('questionText');
+        const optionsList = document.getElementById('optionsList');
+        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const feedbackEl = document.getElementById('feedback');
+        const liveFeedback = document.getElementById('liveFeedback');
+        const qNumber = document.getElementById('qNumber');
+        const topicScore = document.getElementById('topicScore');
+        const sectionResultCard = document.getElementById('sectionResultCard');
+        const sectionResultTitle = document.getElementById('sectionResultTitle');
+        const sectionResultText = document.getElementById('sectionResultText');
+        const mainCard = document.getElementById('mainCard');
+        const finalCard = document.getElementById('finalCard');
+        const grandResult = document.getElementById('grandResult');
+        const breakdown = document.getElementById('breakdown');
+        const restartBtn = document.getElementById('restartBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        function escapePlainText(s) {
+            // not strictly necessary because we use textContent, but keep for safety
+            return String(s);
+        }
+
+        function loadQuestion() {
+            const section = sections[sectionIndex];
+            const q = section.questions[qIndex];
+            sectionTitle.textContent = section.title;
+            qNumber.textContent = `Q ${qIndex + 1} (${q.type === 'mcq' ? 'MCQ' : 'T/F'})`;
+
+            // Use textContent so tags show as text
+            questionText.textContent = escapePlainText(q.question);
+
+            optionsList.innerHTML = '';
+            feedbackEl.style.display = 'none';
+            liveFeedback.textContent = '';
+
+            q.options.forEach((opt, idx) => {
+                const li = document.createElement('li');
+                li.className = 'opt';
+                li.setAttribute('data-idx', idx);
+                li.tabIndex = 0;
+
+                // create radio input
+                const input = document.createElement('input');
+                input.type = 'radio';
+                input.name = 'opt';
+                input.id = `opt${idx}`;
+                input.value = idx;
+                input.style.marginRight = '10px';
+                input.addEventListener('click', (e) => {
+                    // prevent double event bubbling
+                    e.stopPropagation();
+                });
+
+                // create label using textContent so any tags are shown literally
+                const label = document.createElement('label');
+                label.htmlFor = input.id;
+                label.style.cursor = 'pointer';
+                label.textContent = escapePlainText(opt);
+
+                // assemble
+                li.appendChild(input);
+                li.appendChild(label);
+
+                // click on whole li selects option
+                li.addEventListener('click', () => selectOption(idx));
+                li.addEventListener('keydown', (e) => { if (e.key === 'Enter') selectOption(idx) });
+
+                optionsList.appendChild(li);
+            });
+
+            qCounter.textContent = `${qIndex + 1} / ${section.questions.length}`;
+            const answeredCount = userAnswersPerSection[sectionIndex].filter(x => x !== null).length;
+            topicScore.textContent = `${sectionScores[sectionIndex].correct} / ${section.questions.length}`;
+            sectionProgress.style.width = `${((answeredCount) / section.questions.length) * 100}%`;
+
+            prevBtn.disabled = (qIndex === 0 && sectionIndex === 0);
+            const ua = userAnswersPerSection[sectionIndex][qIndex];
+            nextBtn.disabled = (ua === null);
+            if (ua !== null) {
+                showImmediateFeedback(ua, false);
+            } else {
+                feedbackEl.style.display = 'none';
+                liveFeedback.textContent = '';
+                const radios = optionsList.querySelectorAll('input[type=radio]');
+                radios.forEach(r => r.checked = false);
+            }
+        }
+
+        function selectOption(idx) {
+            const section = sections[sectionIndex];
+            const q = section.questions[qIndex];
+            if (userAnswersPerSection[sectionIndex][qIndex] !== null) return;
+            userAnswersPerSection[sectionIndex][qIndex] = idx;
+            overallAnswered++;
+            showImmediateFeedback(idx, true);
+            nextBtn.disabled = false;
+        }
+
+        function showImmediateFeedback(selectedIdx, justAnswered) {
+            const section = sections[sectionIndex];
+            const q = section.questions[qIndex];
+            const correctIdx = q.answer;
+            const items = optionsList.querySelectorAll('.opt');
+            items.forEach((li, i) => {
+                li.style.borderColor = '#e6eefc';
+                li.style.background = 'linear-gradient(180deg,#fff,#fbfdff)';
+                li.style.opacity = 1;
+                const inp = li.querySelector('input');
+                if (inp) inp.checked = (i === selectedIdx);
+                if (i === selectedIdx && i === correctIdx) {
+                    li.style.borderColor = 'rgba(22,163,74,0.12)';
+                } else if (i === selectedIdx && i !== correctIdx) {
+                    li.style.borderColor = 'rgba(220,38,38,0.12)';
+                }
+            });
+
+            if (selectedIdx === correctIdx) {
+                feedbackEl.textContent = '✅ Correct';
+                feedbackEl.className = 'feedback good';
+                feedbackEl.style.display = 'block';
+                if (justAnswered) sectionScores[sectionIndex].correct++;
+            } else {
+                feedbackEl.textContent = `❌ Wrong — Correct: ${q.options[correctIdx]}`;
+                feedbackEl.className = 'feedback bad';
+                feedbackEl.style.display = 'block';
+            }
+            sectionScores[sectionIndex].total = section.questions.length;
+            topicScore.textContent = `${sectionScores[sectionIndex].correct} / ${section.questions.length}`;
+        }
+
+        nextBtn.addEventListener('click', () => {
+            const section = sections[sectionIndex];
+            const ua = userAnswersPerSection[sectionIndex][qIndex];
+            if (ua === null) return;
+            if (qIndex < section.questions.length - 1) {
+                qIndex++;
+                loadQuestion();
+            } else {
+                showSectionResult();
+            }
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (qIndex > 0) {
+                qIndex--;
+                loadQuestion();
+            } else if (sectionIndex > 0 && qIndex === 0) {
+                sectionIndex--;
+                qIndex = sections[sectionIndex].questions.length - 1;
+                loadQuestion();
+                updateUI();
+            }
+        });
+
+        function showSectionResult() {
+            mainCard.style.display = 'none';
+            sectionResultCard.style.display = 'block';
+            const sec = sections[sectionIndex];
+            const correct = sectionScores[sectionIndex].correct;
+            const total = sec.questions.length;
+            sectionResultTitle.textContent = `${sec.title} — Section Result`;
+            sectionResultText.innerHTML = `<strong>${correct} / ${total}</strong> correct`;
+            setTimeout(() => {
+                sectionResultCard.style.display = 'none';
+                sectionIndex++;
+                if (sectionIndex < sections.length) {
+                    qIndex = 0;
+                    mainCard.style.display = 'block';
+                    loadQuestion();
+                    updateUI();
+                } else {
+                    showFinalResults();
+                }
+            }, 1600);
+        }
+
+        function updateUI() {
+            sectionTitle.textContent = sections[sectionIndex].title;
+            const totals = sections.map(s => s.questions.length).reduce((a, b) => a + b, 0);
+            const answered = userAnswersPerSection.flat().filter(x => x !== null).length;
+            liveFeedback.textContent = `Answered ${answered} / ${totals}`;
+            topicScore.textContent = `${sectionScores[sectionIndex].correct} / ${sections[sectionIndex].questions.length}`;
+        }
+
+        function showFinalResults() {
+            finalCard.style.display = 'block';
+            sectionResultCard.style.display = 'none';
+            mainCard.style.display = 'none';
+            const totalQuestions = sections.reduce((acc, s) => acc + s.questions.length, 0);
+            const totalCorrect = sectionScores.reduce((acc, s) => acc + s.correct, 0);
+            grandResult.textContent = `${totalCorrect} / ${totalQuestions} correct`;
+            breakdown.innerHTML = sections.map((s, i) => {
+                return `<div style="margin-bottom:8px"><strong>${s.title}:</strong> ${sectionScores[i].correct} / ${s.questions.length}</div>`;
+            }).join('');
+            finalCard.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        restartBtn.addEventListener('click', () => {
+            sectionIndex = 0; qIndex = 0;
+            userAnswersPerSection = sections.map(s => Array(s.questions.length).fill(null));
+            sectionScores = sections.map(() => ({ correct: 0, total: 0 }));
+            overallAnswered = 0;
+            finalCard.style.display = 'none';
+            mainCard.style.display = 'block';
+            loadQuestion();
+            updateUI();
+        });
+
+        downloadBtn.addEventListener('click', () => {
+            const results = sections.map((s, si) => ({
+                section: s.title,
+                total: s.questions.length,
+                correct: sectionScores[si].correct,
+                answers: s.questions.map((q, qi) => ({
+                    question: q.question,
+                    yourAnswerIndex: userAnswersPerSection[si][qi],
+                    yourAnswer: userAnswersPerSection[si][qi] === null ? null : q.options[userAnswersPerSection[si][qi]],
+                    correctIndex: q.answer,
+                    correctAnswer: q.options[q.answer]
+                }))
+            }));
+            const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'quiz-results.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        function startQuiz() {
+            sectionIndex = 0; qIndex = 0;
+            mainCard.style.display = 'block';
+            sectionResultCard.style.display = 'none';
+            finalCard.style.display = 'none';
+            loadQuestion();
+            updateUI();
+        }
+        startQuiz();
+
+    </script>
+</body>
+
+</html>
